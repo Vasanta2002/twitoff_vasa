@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from .models import DB, User, Tweet
+from .twitter import add_or_update_user
 
 
 def create_app():
@@ -18,10 +19,6 @@ def create_app():
         users = User.query.all()
         return render_template('base.html', title='Home', users=users)
 
-    @app.route('/bananas')
-    def bananas():
-        return render_template('base.html', title='Bananas')
-
     @app.route('/reset')
     def reset():
         # Drop all database 
@@ -29,26 +26,44 @@ def create_app():
         # Recreate all database tables according to the 
         # indcated schema in models.py
         DB.create_all()
-        return "database had been reset"
+        return render_template('base.html', title='Reset database')
 
     @app.route('/populate')
     def populate():
-        # create two fake users in DB
-        ryan = User(id=1, username='Ryan')
-        DB.session.add(ryan)
-        vasan = User(id=2, username='Vasan')
-        DB.session.add(vasan)
+        # # create two fake users in DB
+        add_or_update_user('elonmusk')
+        add_or_update_user('rrherr')
+        add_or_update_user('calebhicks')
 
-        # create two fake tweets in the DB
-        tweet1 = Tweet(id=1, text="ryan's tweet", user=ryan)
-        DB.session.add(tweet1)
-        tweet2 = Tweet(id=2, text="vasan's tweet", user=vasan)
-        DB.session.add(tweet2)
+        # ryan = User(id=1, username='Ryan')
+        # DB.session.add(ryan)
+        # vasan = User(id=2, username='Vasan')
+        # DB.session.add(vasan)
 
-        # Save the changes we just made to the database
-        # 'commit' the database changes
-        DB.session.commit()
+        # # create two fake tweets in the DB
+        # tweet1 = Tweet(id=1, text="ryan's tweet", user=ryan)
+        # DB.session.add(tweet1)
+        # tweet2 = Tweet(id=2, text="vasan's tweet", user=vasan)
+        # DB.session.add(tweet2)
 
-        return "database has been populated"
+        # # Save the changes we just made to the database
+        # # 'commit' the database changes
+        # DB.session.commit()
+
+        return render_template('base.html', title='Populate Database')
+
+    @app.route('/update')
+    def update():
+        # get list of usernames of all users
+
+        users = User.query.all()
+        # usernames = []
+        # for user in users:
+        #     usernames.append(user.username)
+
+        for username in [user.username for user in users]:
+            add_or_update_user(username)
+
+        return render_template('base.html', title='Users Updated')  
 
     return app
